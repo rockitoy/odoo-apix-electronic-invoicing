@@ -1,0 +1,230 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_fi_invoice
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 13.0+e-20200224\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-02-28 15:18+0000\n"
+"PO-Revision-Date: 2020-02-28 15:18+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_layout_footer_finnish
+msgid "&amp;bull;"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "<span class=\"bank-transfer-label\">Euro</span>"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "<span class=\"offset-2\">Description</span>"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "<span>Date due</span>"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "<span>Invoice number</span>"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "<span>Payment reference</span>"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "<strong>Total</strong>"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Amount"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Base"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Business ID:"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Credit note"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Date due"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Debtor"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Delivery date"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Discount (%)"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Domicile:"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_layout_footer_finnish
+msgid "Email:"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model:ir.actions.report,name:l10n_fi_invoice.report_invoice_finnish
+msgid "Finnish Invoice"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "From account No."
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "IBAN"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Invoice"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Invoice Date"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Invoice number"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model:ir.model,name:l10n_fi_invoice.model_account_move
+msgid "Journal Entries"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Our reference"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_layout_footer_finnish
+msgid "Page:"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Payment term"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_layout_footer_finnish
+msgid "Phone:"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Quantity"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Recipient"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid ""
+"Recipient's\n"
+"                                            account number"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Reference No."
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Signature"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Tax"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Taxes"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid ""
+"The payment will be issued to the recipient under the terms of payment service and\n"
+"                                    only to the account number specified by the debtor."
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Total Without Taxes"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Unit Price"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "VAT:"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_layout_footer_finnish
+msgid "Website:"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model_terms:ir.ui.view,arch_db:l10n_fi_invoice.report_invoice_finnish_document
+msgid "Your reference"
+msgstr ""
+
+#. module: l10n_fi_invoice
+#: model:ir.actions.report,print_report_name:l10n_fi_invoice.report_invoice_finnish
+msgid "object._get_invoice_pdf_filename()"
+msgstr ""
