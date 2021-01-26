@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="apix_electronic_invoice_template">
+            <Finvoice Version="1.3">
+                <MessageTransmissionDetails>
+                    <MessageSenderDetails>
+                        <FromIdentifier><t t-esc="record.company_id.company_registry"/></FromIdentifier>
+                        <FromIntermediator>APIX</FromIntermediator>
+                    </MessageSenderDetails>
+                    <MessageReceiverDetails>
+                        <ToIdentifier><t t-esc="record.partner_id.e_inv_addr"/></ToIdentifier>
+                        <ToIntermediator><t t-esc="record.partner_id.intermediator"/></ToIntermediator>
+                    </MessageReceiverDetails>
+                    <MessageDetails>
+                        <MessageIdentifier><t t-esc="record.name"/></MessageIdentifier>
+                        <MessageTimeStamp><t t-esc="msg_time_stamp"/></MessageTimeStamp>
+                    </MessageDetails>
+                </MessageTransmissionDetails>
+                <SellerPartyDetails>
+                    <SellerPartyIdentifier><t t-esc="record.company_id.company_registry"/></SellerPartyIdentifier>
+                    <SellerPartyIdentifierUrlText>http://www.ytj.fi/yrit_sel2.asp?kielikoodi=1</SellerPartyIdentifierUrlText>
+                    <SellerOrganisationName><t t-esc="record.company_id.name"/></SellerOrganisationName>
+                    <SellerOrganisationTaxCode><t t-esc="record.company_id.vat"/></SellerOrganisationTaxCode>
+                    <SellerOrganisationTaxCodeUrlText>http://ec.europa.eu/taxation_customs/vies/lang.do?fromWhichPage=vieshome&amp;selectedLanguage=FI</SellerOrganisationTaxCodeUrlText>
+                    <SellerPostalAddressDetails>
+                        <SellerStreetName><t t-esc="record.company_id.street"/></SellerStreetName>
+                        <SellerTownName><t t-esc="record.company_id.city"/></SellerTownName>
+                        <SellerPostCodeIdentifier><t t-esc="record.company_id.zip"/></SellerPostCodeIdentifier>
+                        <CountryCode><t t-esc="record.company_id.country_id.code"/></CountryCode>
+                        <CountryName><t t-esc="record.company_id.country_id.name"/></CountryName>
+                    </SellerPostalAddressDetails>
+                </SellerPartyDetails>
+                <SellerContactPersonName><t t-esc="record.invoice_user_id.name"/></SellerContactPersonName>
+                <SellerCommunicationDetails>
+                    <SellerPhoneNumberIdentifier><t t-esc="record.invoice_user_id.phone"/></SellerPhoneNumberIdentifier>
+                    <SellerEmailaddressIdentifier><t t-esc="record.invoice_user_id.email"/></SellerEmailaddressIdentifier>
+                </SellerCommunicationDetails>
+                <SellerInformationDetails>
+                    <SellerWebaddressIdentifier><t t-esc="record.company_id.website"/></SellerWebaddressIdentifier>
+                    <SellerAccountDetails>
+                        <t t-if="record.company_id.partner_id.bank_ids">
+                            <SellerAccountID IdentificationSchemeName="IBAN"><t t-esc="record.company_id.partner_id.bank_ids[0].acc_number.replace(' ','')"/></SellerAccountID>
+                            <SellerBic IdentificationSchemeName="BIC"><t t-esc="record.company_id.partner_id.bank_ids[0].bank_id.bic"/></SellerBic>
+                        </t>
+                    </SellerAccountDetails>
+                </SellerInformationDetails>
+                <BuyerPartyDetails>
+                    <BuyerPartyIdentifier><t t-esc="record.partner_id.company_registry"/></BuyerPartyIdentifier>
+                    <BuyerOrganisationName><t t-esc="record.partner_id.name"/></BuyerOrganisationName>
+                    <BuyerPostalAddressDetails>
+                        <BuyerStreetName><t t-esc="record.partner_id.street"/></BuyerStreetName>
+                        <BuyerTownName><t t-esc="record.partner_id.city"/></BuyerTownName>
+                        <BuyerPostCodeIdentifier><t t-esc="record.partner_id.zip"/></BuyerPostCodeIdentifier>
+                        <CountryCode><t t-esc="record.partner_id.country_id.code"/></CountryCode>
+                    </BuyerPostalAddressDetails>
+                </BuyerPartyDetails>
+                <DeliveryPartyDetails>
+                    <DeliveryOrganisationName><t t-if="record.partner_shipping_id" t-esc="record.partner_shipping_id.name"/></DeliveryOrganisationName>
+                    <DeliveryPostalAddressDetails>
+                        <DeliveryStreetName><t t-if="record.partner_shipping_id" t-esc="record.partner_shipping_id.street"/></DeliveryStreetName>
+                        <DeliveryTownName><t t-if="record.partner_shipping_id" t-esc="record.partner_shipping_id.city"/></DeliveryTownName>
+                        <DeliveryPostCodeIdentifier><t t-if="record.partner_shipping_id" t-esc="record.partner_shipping_id.zip"/></DeliveryPostCodeIdentifier>
+                        <CountryCode><t t-if="record.partner_shipping_id" t-esc="record.partner_shipping_id.country_id.code"/></CountryCode>
+                    </DeliveryPostalAddressDetails>
+                </DeliveryPartyDetails>
+                <DeliveryDetails>
+                    <DeliveryDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></DeliveryDate>
+                </DeliveryDetails>
+                <InvoiceDetails>
+                    <InvoiceTypeCode>INV01</InvoiceTypeCode>
+                    <InvoiceTypeText>LASKU</InvoiceTypeText>
+                    <OriginCode>Original</OriginCode>
+                    <InvoiceNumber><t t-esc="record.name"/></InvoiceNumber>
+                    <InvoiceDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></InvoiceDate>
+                    <InvoiceTotalVatExcludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_untaxed).replace('.',',' )"/></InvoiceTotalVatExcludedAmount>
+                    <InvoiceTotalVatAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_tax).replace('.',',')"/></InvoiceTotalVatAmount>
+                    <InvoiceTotalVatIncludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_total).replace('.',',')"/></InvoiceTotalVatIncludedAmount>
+                    <VatSpecificationDetails>
+                        <VatBaseAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(total_base_amount).replace('.',',')"/></VatBaseAmount>
+                        <VatRatePercent><t t-esc="str(tax_amount_rate).replace('.', ',')"/></VatRatePercent>
+                        <VatRateAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(total_tax_amount).replace('.', ',')"/></VatRateAmount>
+                    </VatSpecificationDetails>
+                    <PaymentTermsDetails>
+                        <PaymentTermsFreeText><t t-esc="record.invoice_payment_term_id.name"/></PaymentTermsFreeText>
+                        <InvoiceDueDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date_due)"/></InvoiceDueDate>
+                    </PaymentTermsDetails>
+                </InvoiceDetails>
+                <PaymentStatusDetails>
+                    <PaymentStatusCode>NOTPAID</PaymentStatusCode>
+                </PaymentStatusDetails>
+                <t t-foreach="invoice_line_values" t-as="line_values">
+                    <t t-set="line" t-value="line_values['line']"/>
+                    <InvoiceRow>
+                        <ArticleIdentifier><t t-esc="line.product_id.default_code"/></ArticleIdentifier>
+                        <ArticleName><t t-esc="line.product_id.name"/></ArticleName>
+                        <DeliveredQuantity QuantityUnitCode=""><t t-esc="line.quantity"/></DeliveredQuantity>
+                        <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR"><t t-esc="line.price_unit"/></UnitPriceAmount>
+                        <t t-foreach="line_values['tax_details']" t-as="tax_vals">
+                            <RowVatRatePercent><t t-esc="tax_vals['tax_rate']"/></RowVatRatePercent>
+                            <RowVatAmount AmountCurrencyIdentifier="EUR"><t t-esc="tax_vals['tax_amount']"/></RowVatAmount>
+                            <RowVatExcludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="tax_vals['tax_base_amount']"/></RowVatExcludedAmount>
+                            <RowAmount AmountCurrencyIdentifier="EUR"><t t-esc="line.price_total"/></RowAmount>
+                        </t>
+                    </InvoiceRow>
+                </t>
+                <EpiDetails>
+                    <EpiIdentificationDetails>
+                        <EpiDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></EpiDate>
+                        <EpiReference><t t-esc="record.payment_reference"/></EpiReference>
+                    </EpiIdentificationDetails>
+                    <EpiPartyDetails>
+                        <EpiBfiPartyDetails>
+                            <t t-if="record.company_id.partner_id.bank_ids">
+                                <EpiBfiIdentifier IdentificationSchemeName="BIC"><t t-esc="record.company_id.partner_id.bank_ids[0].bank_id.bic"/></EpiBfiIdentifier>
+                            </t>
+                        </EpiBfiPartyDetails>
+                        <EpiBeneficiaryPartyDetails>
+                            <EpiNameAddressDetails><t t-esc="record.company_id.name"/></EpiNameAddressDetails>
+                            <EpiBei><t t-esc="record.company_id.company_registry"/></EpiBei>
+                            <t t-if="record.company_id.partner_id.bank_ids">
+                                <EpiAccountID IdentificationSchemeName="IBAN"><t t-esc="record.company_id.partner_id.bank_ids[0].acc_number.replace(' ','')"/></EpiAccountID>
+                            </t>
+                        </EpiBeneficiaryPartyDetails>
+                    </EpiPartyDetails>
+                    <EpiPaymentInstructionDetails>
+                        <EpiRemittanceInfoIdentifier IdentificationSchemeName="SPY"><t t-esc="record.payment_reference"/></EpiRemittanceInfoIdentifier>
+                        <EpiInstructedAmount AmountCurrencyIdentifier="EUR"><t t-esc="record.amount_total"/></EpiInstructedAmount>
+                        <EpiCharge ChargeOption="SHA">SHA</EpiCharge>
+                        <EpiDateOptionDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date_due)"/></EpiDateOptionDate>
+                    </EpiPaymentInstructionDetails>
+                </EpiDetails>
+                <t t-set="status" t-value="record.find_attachments()[0]"/>
+                <t t-set="attachments" t-value="record.find_attachments()[1]"/>
+                <InvoiceUrlNameText>APIX_PDFFILE</InvoiceUrlNameText>
+                <t t-if="status == True">
+                    <InvoiceUrlNameText>APIX_ATTACHMENT</InvoiceUrlNameText>
+                </t>
+                <InvoiceUrlText>file://<t t-esc="record.name.replace('/', '')"/>.pdf</InvoiceUrlText>
+                <t t-if="status == True">
+                    <InvoiceUrlText>file://<t t-esc="record.name.replace('/', '_')"/>_attachments.zip</InvoiceUrlText>
+                </t>
+            </Finvoice>
+        </template>
+    </data>
+</odoo>

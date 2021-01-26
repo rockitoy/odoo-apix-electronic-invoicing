@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_company_form_inherit_apix_invoicing" model="ir.ui.view">
+        <field name="name">view.company.form.inherit.apix.invoicing</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='social_media']" position="after">
+                <group string="Apix Electronic Invoicing Parameters" name="apix_params">
+                    <field name="apix_userid"/>
+                    <field name="apix_pwd"/>
+                    <field name="apix_enviroment"/>
+                    <button name="retrieve_transfer_key" string="Retrieve Keys" type="object"/>
+                    <field name="apix_transfer_id"/>
+                    <field name="apix_transfer_key"/>
+                    <field name="unique_comp_id"/>
+
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

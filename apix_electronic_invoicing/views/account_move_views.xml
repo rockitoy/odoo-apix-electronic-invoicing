@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_move_form_inherit_apix_invoicing" model="ir.ui.view">
+        <field name="name">view.account.move.form.inherit.apix.invoicing</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='button_draft']" position="after">
+                <field name="apix_sent_failed" invisible="1"/>
+                <field name="send_invisible" invisible="1"/>
+                <button name="send_e_invoice" string="Send e-Invoice" type="object" attrs="{'invisible': ['|',('send_invisible', '=', True),('state','!=', 'posted')]}" class="btn btn-success"/>
+                <button name="re_send_e_invoice" string="Re-Send e-Invoice" type="object" attrs="{'invisible': [('apix_sent_failed', '=', False)]}" class="btn btn-danger"/>
+            </xpath>
+            <xpath expr="//field[@name='edi_state']" position="after">
+                <field name="apix_report_template_id" domain="[('model','=','account.move')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
+
+

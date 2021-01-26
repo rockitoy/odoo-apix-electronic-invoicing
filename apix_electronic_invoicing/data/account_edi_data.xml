@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="edi_facturx_1_0_06" model="account.edi.format">
+            <field name="name">Apix Electronic Invoicing (FI)</field>
+            <field name="code">facturx_1_0_06</field>
+        </record>
+
+    </data>
+</odoo>
