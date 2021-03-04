@@ -31,6 +31,13 @@ class AccountMove(models.Model):
                                               default=_default_report_template_id)
     apix_sent_failed = fields.Boolean(string="Apix e-invoice send failed")
     send_invisible = fields.Boolean(string="Send Invisible", default=False)
+    journal_type = fields.Selection([
+            ('sale', 'Sales'),
+            ('purchase', 'Purchase'),
+            ('cash', 'Cash'),
+            ('bank', 'Bank'),
+            ('general', 'Miscellaneous'),
+        ], required=True, related='journal_id.type')
 
     def find_attachments(self):
         atts = self.env['ir.attachment'].search([('res_id', '=', self.id), ('res_model', '=', 'account.move'),
@@ -158,32 +165,42 @@ class AccountMove(models.Model):
                 else:
                     url = "https://test-api.apix.fi/invoices?soft=%s&ver=%s&TraID=%s&t=%s&d=SHA-256:%s" % (
                         "Odoo", "1.0", self.company_id.apix_transfer_id, timestamp, key_digest)
-                res = requests.put(url, headers=headers, data=ret)
-                DOMTree = xml.dom.minidom.parseString(res.content.decode('utf-8'))
-                collection = DOMTree.documentElement
-                values = collection.getElementsByTagName('Status')
-                if values[0].firstChild.nodeValue == 'ERR':
-                    document = self.edi_document_ids.filtered(
-                        lambda doc: doc.edi_format_id == self.env.ref('apix_electronic_invoicing.edi_facturx_1_0_06'))
-                    if document:
-                        document.write({
-                            'state': 'fail',
-                            'error': res.content,
 
-                        })
-                        self.apix_sent_failed = True
-                        self.send_invisible = True
-                if values[0].firstChild.nodeValue == 'OK':
-                    document = self.edi_document_ids.filtered(
-                        lambda doc: doc.edi_format_id == self.env.ref('apix_electronic_invoicing.edi_facturx_1_0_06'))
-                    if document:
-                        document.write({
-                            'state': 'sent',
-                            'success_msg': res.content,
-                        })
-                        self.apix_sent_failed = False
-                        self.send_invisible = True
-                return ret
+                try:
+                    res = requests.put(url, headers=headers, data=ret)
+
+                    DOMTree = xml.dom.minidom.parseString(res.content.decode('utf-8'))
+
+                    collection = DOMTree.documentElement
+                    values = collection.getElementsByTagName('Status')
+
+                    if values[0].firstChild.nodeValue == 'ERR':
+                        document = self.edi_document_ids.filtered(
+                            lambda doc: doc.edi_format_id == self.env.ref(
+                                'apix_electronic_invoicing.edi_facturx_1_0_06'))
+                        if document:
+                            document.write({
+                                'state': 'fail',
+                                'error': res.content,
+
+                            })
+                            self.apix_sent_failed = True
+                            self.send_invisible = True
+                    if values[0].firstChild.nodeValue == 'OK':
+                        document = self.edi_document_ids.filtered(
+                            lambda doc: doc.edi_format_id == self.env.ref(
+                                'apix_electronic_invoicing.edi_facturx_1_0_06'))
+                        if document:
+                            document.write({
+                                'state': 'sent',
+                                'success_msg': res.content,
+                            })
+                            self.apix_sent_failed = False
+                            self.send_invisible = True
+                            return ret
+                except Exception as e:
+                    raise UserError(_(e))
+
             finally:
                 fp.close()
                 os.remove(zipfilepath)

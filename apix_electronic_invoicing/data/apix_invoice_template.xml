@@ -6,7 +6,7 @@
                 <MessageTransmissionDetails>
                     <MessageSenderDetails>
                         <FromIdentifier><t t-esc="record.company_id.company_registry"/></FromIdentifier>
-                        <FromIntermediator>APIX</FromIntermediator>
+                        <FromIntermediator>003723327487</FromIntermediator>
                     </MessageSenderDetails>
                     <MessageReceiverDetails>
                         <ToIdentifier><t t-esc="record.partner_id.e_inv_addr"/></ToIdentifier>
@@ -18,11 +18,11 @@
                     </MessageDetails>
                 </MessageTransmissionDetails>
                 <SellerPartyDetails>
+                    <!--                    <SellerReferenceIdentifier><t t-esc="record.invoice_origin"/></SellerReferenceIdentifier>-->
                     <SellerPartyIdentifier><t t-esc="record.company_id.company_registry"/></SellerPartyIdentifier>
                     <SellerPartyIdentifierUrlText>http://www.ytj.fi/yrit_sel2.asp?kielikoodi=1</SellerPartyIdentifierUrlText>
                     <SellerOrganisationName><t t-esc="record.company_id.name"/></SellerOrganisationName>
                     <SellerOrganisationTaxCode><t t-esc="record.company_id.vat"/></SellerOrganisationTaxCode>
-                    <SellerOrganisationTaxCodeUrlText>http://ec.europa.eu/taxation_customs/vies/lang.do?fromWhichPage=vieshome&amp;selectedLanguage=FI</SellerOrganisationTaxCodeUrlText>
                     <SellerPostalAddressDetails>
                         <SellerStreetName><t t-esc="record.company_id.street"/></SellerStreetName>
                         <SellerTownName><t t-esc="record.company_id.city"/></SellerTownName>
@@ -31,6 +31,8 @@
                         <CountryName><t t-esc="record.company_id.country_id.name"/></CountryName>
                     </SellerPostalAddressDetails>
                 </SellerPartyDetails>
+
+                <!--                <OrderIdentifier><t t-esc="record.ref"/></OrderIdentifier>-->
                 <SellerContactPersonName><t t-esc="record.invoice_user_id.name"/></SellerContactPersonName>
                 <SellerCommunicationDetails>
                     <SellerPhoneNumberIdentifier><t t-esc="record.invoice_user_id.phone"/></SellerPhoneNumberIdentifier>
@@ -76,11 +78,14 @@
                     <InvoiceTotalVatExcludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_untaxed).replace('.',',' )"/></InvoiceTotalVatExcludedAmount>
                     <InvoiceTotalVatAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_tax).replace('.',',')"/></InvoiceTotalVatAmount>
                     <InvoiceTotalVatIncludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_total).replace('.',',')"/></InvoiceTotalVatIncludedAmount>
-                    <VatSpecificationDetails>
-                        <VatBaseAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(total_base_amount).replace('.',',')"/></VatBaseAmount>
-                        <VatRatePercent><t t-esc="str(tax_amount_rate).replace('.', ',')"/></VatRatePercent>
-                        <VatRateAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(total_tax_amount).replace('.', ',')"/></VatRateAmount>
-                    </VatSpecificationDetails>
+                    <t t-foreach="new_tax" t-as="new">
+                            <VatSpecificationDetails>
+                                <VatBaseAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(new_tax[new][0]).replace('.', ',')"/></VatBaseAmount>
+                                <VatRatePercent><t t-esc="str(new_tax[new][1]).replace('.', ',')"/></VatRatePercent>
+                                <VatCode><t t-esc="new_tax[new][2]"/></VatCode>
+                                <VatRateAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(new_tax[new][3]).replace('.', ',')"/></VatRateAmount>
+                            </VatSpecificationDetails>
+                        </t>
                     <PaymentTermsDetails>
                         <PaymentTermsFreeText><t t-esc="record.invoice_payment_term_id.name"/></PaymentTermsFreeText>
                         <InvoiceDueDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date_due)"/></InvoiceDueDate>
@@ -89,29 +94,14 @@
                 <PaymentStatusDetails>
                     <PaymentStatusCode>NOTPAID</PaymentStatusCode>
                 </PaymentStatusDetails>
-                <t t-foreach="invoice_line_values" t-as="line_values">
-                    <t t-set="line" t-value="line_values['line']"/>
-                    <InvoiceRow>
-                        <ArticleIdentifier><t t-esc="line.product_id.default_code"/></ArticleIdentifier>
-                        <ArticleName><t t-esc="line.product_id.name"/></ArticleName>
-                        <DeliveredQuantity QuantityUnitCode=""><t t-esc="line.quantity"/></DeliveredQuantity>
-                        <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR"><t t-esc="line.price_unit"/></UnitPriceAmount>
-                        <t t-foreach="line_values['tax_details']" t-as="tax_vals">
-                            <RowVatRatePercent><t t-esc="tax_vals['tax_rate']"/></RowVatRatePercent>
-                            <RowVatAmount AmountCurrencyIdentifier="EUR"><t t-esc="tax_vals['tax_amount']"/></RowVatAmount>
-                            <RowVatExcludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="tax_vals['tax_base_amount']"/></RowVatExcludedAmount>
-                            <RowAmount AmountCurrencyIdentifier="EUR"><t t-esc="line.price_total"/></RowAmount>
-                        </t>
-                    </InvoiceRow>
-                </t>
+                {var1}
                 <EpiDetails>
                     <EpiIdentificationDetails>
                         <EpiDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></EpiDate>
                         <EpiReference><t t-esc="record.payment_reference"/></EpiReference>
                     </EpiIdentificationDetails>
                     <EpiPartyDetails>
-                        <EpiBfiPartyDetails>
-                            <t t-if="record.company_id.partner_id.bank_ids">
+                        <EpiBfiPartyDetails><t t-if="record.company_id.partner_id.bank_ids">
                                 <EpiBfiIdentifier IdentificationSchemeName="BIC"><t t-esc="record.company_id.partner_id.bank_ids[0].bank_id.bic"/></EpiBfiIdentifier>
                             </t>
                         </EpiBfiPartyDetails>
@@ -125,7 +115,7 @@
                     </EpiPartyDetails>
                     <EpiPaymentInstructionDetails>
                         <EpiRemittanceInfoIdentifier IdentificationSchemeName="SPY"><t t-esc="record.payment_reference"/></EpiRemittanceInfoIdentifier>
-                        <EpiInstructedAmount AmountCurrencyIdentifier="EUR"><t t-esc="record.amount_total"/></EpiInstructedAmount>
+                        <EpiInstructedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_total).replace('.', ',')"/></EpiInstructedAmount>
                         <EpiCharge ChargeOption="SHA">SHA</EpiCharge>
                         <EpiDateOptionDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date_due)"/></EpiDateOptionDate>
                     </EpiPaymentInstructionDetails>

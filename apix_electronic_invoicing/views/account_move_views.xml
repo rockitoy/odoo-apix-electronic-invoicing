@@ -8,11 +8,12 @@
             <xpath expr="//button[@name='button_draft']" position="after">
                 <field name="apix_sent_failed" invisible="1"/>
                 <field name="send_invisible" invisible="1"/>
-                <button name="send_e_invoice" string="Send e-Invoice" type="object" attrs="{'invisible': ['|',('send_invisible', '=', True),('state','!=', 'posted')]}" class="btn btn-success"/>
-                <button name="re_send_e_invoice" string="Re-Send e-Invoice" type="object" attrs="{'invisible': [('apix_sent_failed', '=', False)]}" class="btn btn-danger"/>
+                <button name="send_e_invoice" string="Send e-Invoice" type="object" attrs="{'invisible': ['|','|',('send_invisible', '=', True),('state','!=', 'posted'),('journal_type', '!=', 'sale')]}" class="btn btn-success"/>
+                <button name="re_send_e_invoice" string="Re-Send e-Invoice" type="object" attrs="{'invisible': ['|', ('apix_sent_failed', '=', False),('journal_type', '!=', 'sale')]}" class="btn btn-danger"/>
             </xpath>
             <xpath expr="//field[@name='edi_state']" position="after">
-                <field name="apix_report_template_id" domain="[('model','=','account.move')]"/>
+                <field name="journal_type" invisible="1"/>
+                <field name="apix_report_template_id" domain="[('model','=','account.move')]"  attrs="{'invisible': [('journal_type', '!=', 'sale')]}"/>
             </xpath>
         </field>
     </record>

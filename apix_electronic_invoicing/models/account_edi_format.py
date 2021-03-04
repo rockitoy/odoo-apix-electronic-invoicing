@@ -20,7 +20,6 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-
 DEFAULT_FACTURX_DATE_FORMAT = '%Y%m%d'
 
 
@@ -71,19 +70,21 @@ class AccountEdiFormat(models.Model):
             'format_monetary': format_monetary,
             'invoice_line_values': [],
         }
-
         # Tax lines.
         aggregated_taxes_details = {line.tax_line_id.id: {
             'line': line,
             'tax_amount': -line.amount_currency if line.currency_id else -line.balance,
             'tax_base_amount': 0.0,
         } for line in invoice.line_ids.filtered('tax_line_id')}
+        print("aggregate", aggregated_taxes_details)
         taxes = []
         taxes_amount_rate = []
         base_sum = 0
         tax_sum = 0
 
         # Invoice lines.
+        total_items = """"""
+        vat_specific_dict = {}
         for i, line in enumerate(invoice.invoice_line_ids.filtered(lambda l: not l.display_type)):
             price_unit_with_discount = line.price_unit * (1 - (line.discount / 100.0))
             taxes_res = line.tax_ids.with_context(force_sign=line.move_id._get_tax_force_sign()).compute_all(
@@ -108,11 +109,11 @@ class AccountEdiFormat(models.Model):
                     'tax': tax,
                     'tax_amount': tax_res['amount'],
                     'tax_base_amount': tax_res['base'],
-                    'tax_rate': tax.amount
+                    'tax_rate': tax.amount,
+                    'tax_code': tax.tax_code
                 })
                 base_sum += tax_res['base']
                 tax_sum += tax_res['amount']
-
 
                 if tax.id in aggregated_taxes_details:
                     aggregated_taxes_details[tax.id]['tax_base_amount'] += tax_res['base']
@@ -120,10 +121,62 @@ class AccountEdiFormat(models.Model):
                     taxes.append(tax)
                     taxes_amount_rate.append(int(tax.amount))
 
-
             template_values['invoice_line_values'].append(line_template_values)
+            invoice_items = """     <InvoiceRow>
+                                    <ArticleIdentifier>%s</ArticleIdentifier>
+                                    <ArticleName>%s</ArticleName>
+                                    <InvoicedQuantity QuantityUnitCode="%s">%s</InvoicedQuantity>
+                                    <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>
+                                 """ % (line.product_id.default_code, line.product_id.name, line.product_uom_id.name,
+                                        str(line.quantity).replace('.', ','),
+                                        str(line.price_unit).replace('.', ','))
+            if line.tax_ids:
+                total_tax_items = """"""
+                j = 1
+                tax = self.env['account.tax'].browse(line.tax_ids[0].id)
+                if tax.id in vat_specific_dict:
+                    print("yes")
+                    vatrate_amt = (line.price_subtotal * tax.amount) / 100
+                    vat_specific_dict[tax.id][0] = vat_specific_dict[tax.id][0] + line.price_subtotal
+                    vat_specific_dict[tax.id][3] = vat_specific_dict[tax.id][3] + vatrate_amt
+                else:
+                    print("No")
+                    vatrate_amt = (line.price_subtotal * tax.amount) / 100
+                    vat_specific_dict[tax.id] = [line.price_subtotal, tax.amount, tax.tax_code, vatrate_amt]
 
-        template_values['tax_details'] = list(aggregated_taxes_details.values())
+                if tax.tax_code == 'Z' or tax.tax_code == 'E':
+
+                    tax_percent = tax.amount
+                    tax_amount_c = 0.0
+                    tax_amount = str(tax_amount_c).replace('.', ',')
+                    tax_excluded = line.price_unit
+                    tax_excluded_amount = str(tax_excluded).replace('.', ',')
+                    price_total_c = line.price_subtotal + tax_amount_c
+                    price_total = str(price_total_c).replace('.', ',')
+                    tax_code = tax.tax_code
+                else:
+                    tax_percent = tax.amount
+                    tax_amount_c = (line.price_subtotal * tax_percent) / 100
+                    tax_amount = str(tax_amount_c).replace('.', ',')
+                    tax_excluded = line.price_unit
+                    tax_excluded_amount = str(tax_excluded).replace('.', ',')
+                    price_total_c = line.price_subtotal + tax_amount_c
+                    price_total = str(price_total_c).replace('.', ',')
+                    tax_code = tax.tax_code
+                tax_items = """ <RowPositionIdentifier>%s</RowPositionIdentifier>
+                                            <RowVatRatePercent>%s</RowVatRatePercent>
+                                            <RowVatAmount AmountCurrencyIdentifier="EUR">%s</RowVatAmount>
+                                            <RowVatExcludedAmount AmountCurrencyIdentifier="EUR">%s</RowVatExcludedAmount>
+                                            <RowAmount AmountCurrencyIdentifier="EUR">%s</RowAmount>
+                                            <RowVatCode>%s</RowVatCode>
+                                            """ % (j, tax_percent, tax_amount, tax_excluded_amount, price_total, tax_code)
+                total_tax_items += '\n' + tax_items
+                total_items += '\n' + invoice_items + total_tax_items + """</InvoiceRow>"""
+            else:
+                total_items += '\n' + invoice_items + """</InvoiceRow>"""
+
+        template_values['new_tax'] = vat_specific_dict
+        template_values['tax_details'] = list(vat_specific_dict.values())
         if len(taxes_amount_rate) == 1:
             template_values['tax_amount_rate'] = taxes_amount_rate[0]
         elif len(taxes_amount_rate) > 1:
@@ -138,10 +191,13 @@ class AccountEdiFormat(models.Model):
         inv_date_time = normal_invoice_date1.astimezone(pytz.timezone(self.env.user.tz)).isoformat()
         template_values['msg_time_stamp'] = inv_date_time
         # self.invoice_date_time = inv_date_time
+        print("TEMPLATE VALUES", template_values)
         xml_content = b'<?xml version="1.0" encoding="UTF-8"?><!--Finvoice verkkolasku. Passeli XML-tiedosto. 2.8.2011-->'
         xml_content += b'<!DOCTYPE Finvoice SYSTEM "Finvoice.dtd">'
         xml_content += b'<?xml-stylesheet type="text/xsl" href="Finvoice.xsl"?>'
-        xml_content += self.env.ref('apix_electronic_invoicing.apix_electronic_invoice_template')._render(template_values)
+        sample = bytes(self.env.ref('apix_electronic_invoicing.apix_electronic_invoice_template')._render(
+            template_values).decode().format(var1=total_items), 'utf-8')
+        xml_content += sample
         xml_name = '%s_apix_invoicing.xml' % (invoice.name.replace('/', '_'))
         return self.env['ir.attachment'].create({
             'name': xml_name,

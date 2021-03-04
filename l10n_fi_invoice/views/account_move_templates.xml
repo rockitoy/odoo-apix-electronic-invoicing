@@ -232,6 +232,22 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>
+                                        <span>Notice Period</span>
+                                    </td>
+                                    <td>
+                                        <span t-field="o.journal_id.notice_period"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span>Late-payment interest</span>
+                                    </td>
+                                    <td>
+                                        <span t-field="o.journal_id.late_payment_interest"/>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>Delivery date</td>
                                     <td>
                                         <span t-field="o.date_delivered"/>

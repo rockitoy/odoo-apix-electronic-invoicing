@@ -36,3 +36,10 @@ class AccountMove(models.Model):
         # noinspection PyAttributeOutsideInit
         self.sent = True
         return self.env.ref('l10n_fi_invoice.report_invoice_finnish').report_action(self)
+
+
+class AccountJournal(models.Model):
+    _inherit = 'account.journal'
+
+    notice_period = fields.Char(string="Notice period")
+    late_payment_interest = fields.Char(string="Late-payment interest")

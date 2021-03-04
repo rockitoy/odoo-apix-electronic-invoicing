@@ -4,7 +4,7 @@
 
 {
     'name': 'Apix Electronic Invoicing',
-    'version': '14.0.0.9',
+    'version': '14.0.1.3',
     'category': 'Accounting',
     'sequence': 1,
     'summary': 'Electronic Invoicing Format for APIX',
@@ -19,7 +19,8 @@
         'data/apix_invoice_template.xml',
         'views/res_company_views.xml',
         'views/res_partner_views.xml',
-        'views/account_move_views.xml'
+        'views/account_move_views.xml',
+        'views/account_tax_view.xml'
     ],
     'images': [],
     'installable': True,

@@ -4,7 +4,7 @@
 # noinspection PyStatementEffect
 {
     "name": "Finnish Invoice",
-    "version": "14.0.0.0.0",
+    "version": "14.0.0.0.1",
     "author": "Avoin.Systems",
     "category": "Localization",
     "website": "https://avoin.systems",
@@ -16,7 +16,8 @@
     ],
     "data": [
         "views/account_move_templates.xml",
-        "data/report_paperformat_data.xml",  # Only after the template
+        "data/report_paperformat_data.xml", # Only after the template
+        "views/account_journal_view.xml"
     ],
     "summary": "Suomalainen laskupohja",
     "active": False,
