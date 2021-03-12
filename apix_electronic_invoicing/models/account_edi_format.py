@@ -15,7 +15,7 @@ import base64
 
 import io
 import pytz
-
+from decimal import *
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -122,17 +122,16 @@ class AccountEdiFormat(models.Model):
                     taxes_amount_rate.append(int(tax.amount))
 
             template_values['invoice_line_values'].append(line_template_values)
-            invoice_items = """     <InvoiceRow>
-                                    <ArticleIdentifier>%s</ArticleIdentifier>
-                                    <ArticleName>%s</ArticleName>
-                                    <InvoicedQuantity QuantityUnitCode="%s">%s</InvoicedQuantity>
-                                    <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>
-                                 """ % (line.product_id.default_code, line.product_id.name, line.product_uom_id.name,
+            invoice_items = """
+                <InvoiceRow>
+                    <ArticleIdentifier>%s</ArticleIdentifier>
+                    <ArticleName>%s</ArticleName>
+                    <InvoicedQuantity QuantityUnitCode="%s">%s</InvoicedQuantity>
+                    <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>""" % (line.product_id.default_code, line.product_id.name, line.product_uom_id.name,
                                         str(line.quantity).replace('.', ','),
-                                        str(line.price_unit).replace('.', ','))
+                                        str(Decimal(line.price_unit).quantize(Decimal('1.00'))).replace('.', ','))
             if line.tax_ids:
                 total_tax_items = """"""
-                j = 1
                 tax = self.env['account.tax'].browse(line.tax_ids[0].id)
                 if tax.id in vat_specific_dict:
                     print("yes")
@@ -146,34 +145,64 @@ class AccountEdiFormat(models.Model):
 
                 if tax.tax_code == 'Z' or tax.tax_code == 'E':
 
-                    tax_percent = tax.amount
-                    tax_amount_c = 0.0
+                    tax_percent_c = tax.amount
+                    tax_percent = str(tax_percent_c).replace('.', ',')
+                    tax_amount_c = 0.00
                     tax_amount = str(tax_amount_c).replace('.', ',')
-                    tax_excluded = line.price_unit
+                    tax_excluded = Decimal(line.price_subtotal).quantize(Decimal('1.00'))
                     tax_excluded_amount = str(tax_excluded).replace('.', ',')
-                    price_total_c = line.price_subtotal + tax_amount_c
+                    price_total_c = Decimal(line.price_subtotal + tax_amount_c).quantize(Decimal('1.00'))
                     price_total = str(price_total_c).replace('.', ',')
                     tax_code = tax.tax_code
+
+                    discount_percent_c = line.discount
+                    discount_percent = str(discount_percent_c).replace('.', ',')
+
+                    product_amount = line.quantity * line.price_unit
+                    discount_amount_c = (discount_percent_c / 100) * product_amount
+                    discount = Decimal(discount_amount_c).quantize(Decimal('1.00'))
+                    discount_amount = str(discount).replace('.', ',')
+
+                    discount_type_code = 95
+
                 else:
-                    tax_percent = tax.amount
-                    tax_amount_c = (line.price_subtotal * tax_percent) / 100
-                    tax_amount = str(tax_amount_c).replace('.', ',')
-                    tax_excluded = line.price_unit
+                    tax_percent_c = tax.amount
+                    tax_percent = str(tax_percent_c).replace('.', ',')
+                    tax_amount_c = (line.price_subtotal * tax_percent_c) / 100
+                    tax_amount_q = Decimal(tax_amount_c).quantize(Decimal('1.00'))
+                    tax_amount = str(tax_amount_q).replace('.', ',')
+                    tax_excluded = Decimal(line.price_subtotal).quantize(Decimal('1.00'))
                     tax_excluded_amount = str(tax_excluded).replace('.', ',')
-                    price_total_c = line.price_subtotal + tax_amount_c
+                    price_total_c = Decimal(line.price_subtotal + tax_amount_c).quantize(Decimal('1.00'))
                     price_total = str(price_total_c).replace('.', ',')
                     tax_code = tax.tax_code
-                tax_items = """ <RowPositionIdentifier>%s</RowPositionIdentifier>
-                                            <RowVatRatePercent>%s</RowVatRatePercent>
-                                            <RowVatAmount AmountCurrencyIdentifier="EUR">%s</RowVatAmount>
-                                            <RowVatExcludedAmount AmountCurrencyIdentifier="EUR">%s</RowVatExcludedAmount>
-                                            <RowAmount AmountCurrencyIdentifier="EUR">%s</RowAmount>
-                                            <RowVatCode>%s</RowVatCode>
-                                            """ % (j, tax_percent, tax_amount, tax_excluded_amount, price_total, tax_code)
+
+                    discount_percent_c = line.discount
+                    discount_percent = str(discount_percent_c).replace('.', ',')
+
+                    product_amount = line.quantity * line.price_unit
+                    discount_amount_c = (discount_percent_c/100)*product_amount
+                    discount = Decimal(discount_amount_c).quantize(Decimal('1.00'))
+                    discount_amount = str(discount).replace('.', ',')
+
+                    discount_type_code = 95
+
+                tax_items = """
+                    <RowPositionIdentifier>%s</RowPositionIdentifier>
+                    <RowDiscountPercent>%s</RowDiscountPercent>
+                    <RowDiscountAmount AmountCurrencyIdentifier="EUR">%s</RowDiscountAmount>
+                    <RowDiscountTypeCode>%s</RowDiscountTypeCode>
+                    <RowVatRatePercent>%s</RowVatRatePercent>
+                    <RowVatCode>%s</RowVatCode>
+                    <RowVatAmount AmountCurrencyIdentifier="EUR">%s</RowVatAmount>
+                    <RowVatExcludedAmount AmountCurrencyIdentifier="EUR">%s</RowVatExcludedAmount>
+                    <RowAmount AmountCurrencyIdentifier="EUR">%s</RowAmount>""" % (i+1, discount_percent, discount_amount, discount_type_code, tax_percent, tax_code, tax_amount, tax_excluded_amount, price_total)
                 total_tax_items += '\n' + tax_items
-                total_items += '\n' + invoice_items + total_tax_items + """</InvoiceRow>"""
+                total_items += '\n' + invoice_items + total_tax_items + """   
+                </InvoiceRow>"""
             else:
-                total_items += '\n' + invoice_items + """</InvoiceRow>"""
+                total_items += '\n' + invoice_items + """
+                </InvoiceRow>"""
 
         template_values['new_tax'] = vat_specific_dict
         template_values['tax_details'] = list(vat_specific_dict.values())
@@ -192,11 +221,15 @@ class AccountEdiFormat(models.Model):
         template_values['msg_time_stamp'] = inv_date_time
         # self.invoice_date_time = inv_date_time
         print("TEMPLATE VALUES", template_values)
+        lines = total_items.split("\n")
+        non_empty_lines = [line for line in lines if line.strip() != ""]
+        string_without_empty_lines = ""
+        for line in non_empty_lines:
+            string_without_empty_lines += line + "\n"
+
         xml_content = b'<?xml version="1.0" encoding="UTF-8"?><!--Finvoice verkkolasku. Passeli XML-tiedosto. 2.8.2011-->'
-        xml_content += b'<!DOCTYPE Finvoice SYSTEM "Finvoice.dtd">'
         xml_content += b'<?xml-stylesheet type="text/xsl" href="Finvoice.xsl"?>'
-        sample = bytes(self.env.ref('apix_electronic_invoicing.apix_electronic_invoice_template')._render(
-            template_values).decode().format(var1=total_items), 'utf-8')
+        sample = bytes(self.env.ref('apix_electronic_invoicing.apix_electronic_invoice_template')._render(template_values).decode().format(var1=string_without_empty_lines), 'utf-8')
         xml_content += sample
         xml_name = '%s_apix_invoicing.xml' % (invoice.name.replace('/', '_'))
         return self.env['ir.attachment'].create({

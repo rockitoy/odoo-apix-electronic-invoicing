@@ -18,9 +18,7 @@
                     </MessageDetails>
                 </MessageTransmissionDetails>
                 <SellerPartyDetails>
-                    <!--                    <SellerReferenceIdentifier><t t-esc="record.invoice_origin"/></SellerReferenceIdentifier>-->
                     <SellerPartyIdentifier><t t-esc="record.company_id.company_registry"/></SellerPartyIdentifier>
-                    <SellerPartyIdentifierUrlText>http://www.ytj.fi/yrit_sel2.asp?kielikoodi=1</SellerPartyIdentifierUrlText>
                     <SellerOrganisationName><t t-esc="record.company_id.name"/></SellerOrganisationName>
                     <SellerOrganisationTaxCode><t t-esc="record.company_id.vat"/></SellerOrganisationTaxCode>
                     <SellerPostalAddressDetails>
@@ -31,8 +29,6 @@
                         <CountryName><t t-esc="record.company_id.country_id.name"/></CountryName>
                     </SellerPostalAddressDetails>
                 </SellerPartyDetails>
-
-                <!--                <OrderIdentifier><t t-esc="record.ref"/></OrderIdentifier>-->
                 <SellerContactPersonName><t t-esc="record.invoice_user_id.name"/></SellerContactPersonName>
                 <SellerCommunicationDetails>
                     <SellerPhoneNumberIdentifier><t t-esc="record.invoice_user_id.phone"/></SellerPhoneNumberIdentifier>
@@ -40,11 +36,9 @@
                 </SellerCommunicationDetails>
                 <SellerInformationDetails>
                     <SellerWebaddressIdentifier><t t-esc="record.company_id.website"/></SellerWebaddressIdentifier>
-                    <SellerAccountDetails>
-                        <t t-if="record.company_id.partner_id.bank_ids">
+                    <SellerAccountDetails><t t-if="record.company_id.partner_id.bank_ids">
                             <SellerAccountID IdentificationSchemeName="IBAN"><t t-esc="record.company_id.partner_id.bank_ids[0].acc_number.replace(' ','')"/></SellerAccountID>
-                            <SellerBic IdentificationSchemeName="BIC"><t t-esc="record.company_id.partner_id.bank_ids[0].bank_id.bic"/></SellerBic>
-                        </t>
+                            <SellerBic IdentificationSchemeName="BIC"><t t-esc="record.company_id.partner_id.bank_ids[0].bank_id.bic"/></SellerBic></t>
                     </SellerAccountDetails>
                 </SellerInformationDetails>
                 <BuyerPartyDetails>
@@ -75,17 +69,17 @@
                     <OriginCode>Original</OriginCode>
                     <InvoiceNumber><t t-esc="record.name"/></InvoiceNumber>
                     <InvoiceDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></InvoiceDate>
-                    <InvoiceTotalVatExcludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_untaxed).replace('.',',' )"/></InvoiceTotalVatExcludedAmount>
-                    <InvoiceTotalVatAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_tax).replace('.',',')"/></InvoiceTotalVatAmount>
-                    <InvoiceTotalVatIncludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_total).replace('.',',')"/></InvoiceTotalVatIncludedAmount>
-                    <t t-foreach="new_tax" t-as="new">
+                    <SellerReferenceIdentifier><t t-esc="record.invoice_origin"/></SellerReferenceIdentifier>
+                    <OrderIdentifier><t t-esc="record.ref"/></OrderIdentifier>
+                    <InvoiceTotalVatExcludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(round(record.amount_untaxed,2)).replace('.',',' )"/></InvoiceTotalVatExcludedAmount>
+                    <InvoiceTotalVatAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(round(record.amount_tax,2)).replace('.',',')"/></InvoiceTotalVatAmount>
+                    <InvoiceTotalVatIncludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(round(record.amount_total,2)).replace('.',',')"/></InvoiceTotalVatIncludedAmount><t t-foreach="new_tax" t-as="new">
                             <VatSpecificationDetails>
-                                <VatBaseAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(new_tax[new][0]).replace('.', ',')"/></VatBaseAmount>
+                                <VatBaseAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(round(new_tax[new][0],2)).replace('.', ',')"/></VatBaseAmount>
                                 <VatRatePercent><t t-esc="str(new_tax[new][1]).replace('.', ',')"/></VatRatePercent>
                                 <VatCode><t t-esc="new_tax[new][2]"/></VatCode>
-                                <VatRateAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(new_tax[new][3]).replace('.', ',')"/></VatRateAmount>
-                            </VatSpecificationDetails>
-                        </t>
+                                <VatRateAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(round(new_tax[new][3],2)).replace('.', ',')"/></VatRateAmount>
+                            </VatSpecificationDetails></t>
                     <PaymentTermsDetails>
                         <PaymentTermsFreeText><t t-esc="record.invoice_payment_term_id.name"/></PaymentTermsFreeText>
                         <InvoiceDueDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date_due)"/></InvoiceDueDate>
@@ -102,34 +96,25 @@
                     </EpiIdentificationDetails>
                     <EpiPartyDetails>
                         <EpiBfiPartyDetails><t t-if="record.company_id.partner_id.bank_ids">
-                                <EpiBfiIdentifier IdentificationSchemeName="BIC"><t t-esc="record.company_id.partner_id.bank_ids[0].bank_id.bic"/></EpiBfiIdentifier>
-                            </t>
+                                <EpiBfiIdentifier IdentificationSchemeName="BIC"><t t-esc="record.company_id.partner_id.bank_ids[0].bank_id.bic"/></EpiBfiIdentifier></t>
                         </EpiBfiPartyDetails>
                         <EpiBeneficiaryPartyDetails>
                             <EpiNameAddressDetails><t t-esc="record.company_id.name"/></EpiNameAddressDetails>
-                            <EpiBei><t t-esc="record.company_id.company_registry"/></EpiBei>
-                            <t t-if="record.company_id.partner_id.bank_ids">
-                                <EpiAccountID IdentificationSchemeName="IBAN"><t t-esc="record.company_id.partner_id.bank_ids[0].acc_number.replace(' ','')"/></EpiAccountID>
-                            </t>
+                            <EpiBei><t t-esc="record.company_id.company_registry"/></EpiBei><t t-if="record.company_id.partner_id.bank_ids">
+                                <EpiAccountID IdentificationSchemeName="IBAN"><t t-esc="record.company_id.partner_id.bank_ids[0].acc_number.replace(' ','')"/></EpiAccountID></t>
                         </EpiBeneficiaryPartyDetails>
                     </EpiPartyDetails>
                     <EpiPaymentInstructionDetails>
                         <EpiRemittanceInfoIdentifier IdentificationSchemeName="SPY"><t t-esc="record.payment_reference"/></EpiRemittanceInfoIdentifier>
-                        <EpiInstructedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(record.amount_total).replace('.', ',')"/></EpiInstructedAmount>
+                        <EpiInstructedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str(round(record.amount_total,2)).replace('.', ',')"/></EpiInstructedAmount>
                         <EpiCharge ChargeOption="SHA">SHA</EpiCharge>
                         <EpiDateOptionDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date_due)"/></EpiDateOptionDate>
                     </EpiPaymentInstructionDetails>
-                </EpiDetails>
-                <t t-set="status" t-value="record.find_attachments()[0]"/>
-                <t t-set="attachments" t-value="record.find_attachments()[1]"/>
-                <InvoiceUrlNameText>APIX_PDFFILE</InvoiceUrlNameText>
-                <t t-if="status == True">
-                    <InvoiceUrlNameText>APIX_ATTACHMENT</InvoiceUrlNameText>
-                </t>
-                <InvoiceUrlText>file://<t t-esc="record.name.replace('/', '')"/>.pdf</InvoiceUrlText>
-                <t t-if="status == True">
-                    <InvoiceUrlText>file://<t t-esc="record.name.replace('/', '_')"/>_attachments.zip</InvoiceUrlText>
-                </t>
+                </EpiDetails><t t-set="status" t-value="record.find_attachments()[0]"/><t t-set="attachments" t-value="record.find_attachments()[1]"/>
+                <InvoiceUrlNameText>APIX_PDFFILE</InvoiceUrlNameText><t t-if="status == True">
+                    <InvoiceUrlNameText>APIX_ATTACHMENT</InvoiceUrlNameText></t>
+                <InvoiceUrlText>file://<t t-esc="record.name.replace('/', '')"/>.pdf</InvoiceUrlText><t t-if="status == True">
+                    <InvoiceUrlText>file://<t t-esc="record.name.replace('/', '_')"/>_attachments.zip</InvoiceUrlText></t>
             </Finvoice>
         </template>
     </data>

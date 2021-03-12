@@ -28,9 +28,9 @@ class AccountMove(models.Model):
         return self.env.ref("l10n_fi_invoice.report_invoice_finnish").id
 
     apix_report_template_id = fields.Many2one('ir.actions.report', string="PDF Report Template",
-                                              default=_default_report_template_id)
-    apix_sent_failed = fields.Boolean(string="Apix e-invoice send failed")
-    send_invisible = fields.Boolean(string="Send Invisible", default=False)
+                                              default=_default_report_template_id, copy=False)
+    apix_sent_failed = fields.Boolean(string="Apix e-invoice send failed", copy=False)
+    send_invisible = fields.Boolean(string="Send Invisible", default=False, copy=False)
     journal_type = fields.Selection([
             ('sale', 'Sales'),
             ('purchase', 'Purchase'),
