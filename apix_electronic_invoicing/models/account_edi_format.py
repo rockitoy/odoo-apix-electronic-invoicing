@@ -186,8 +186,23 @@ class AccountEdiFormat(models.Model):
                     discount_amount = str(discount).replace('.', ',')
 
                     discount_type_code = 95
-
-                tax_items = """
+                if discount_percent_c == 0:
+                    print("ZERO",discount_percent_c)
+                    tax_items = """
+                    <RowPositionIdentifier>%s</RowPositionIdentifier>
+                    <RowVatRatePercent>%s</RowVatRatePercent>
+                    <RowVatCode>%s</RowVatCode>
+                    <RowVatAmount AmountCurrencyIdentifier="EUR">%s</RowVatAmount>
+                    <RowVatExcludedAmount AmountCurrencyIdentifier="EUR">%s</RowVatExcludedAmount>
+                    <RowAmount AmountCurrencyIdentifier="EUR">%s</RowAmount>""" % (
+                    i + 1, tax_percent, tax_code, tax_amount,
+                    tax_excluded_amount, price_total)
+                    total_tax_items += '\n' + tax_items
+                    total_items += '\n' + invoice_items + total_tax_items + """   
+                </InvoiceRow>"""
+                else:
+                    print("NOT ZERO",discount_percent_c)
+                    tax_items = """
                     <RowPositionIdentifier>%s</RowPositionIdentifier>
                     <RowDiscountPercent>%s</RowDiscountPercent>
                     <RowDiscountAmount AmountCurrencyIdentifier="EUR">%s</RowDiscountAmount>
@@ -196,10 +211,13 @@ class AccountEdiFormat(models.Model):
                     <RowVatCode>%s</RowVatCode>
                     <RowVatAmount AmountCurrencyIdentifier="EUR">%s</RowVatAmount>
                     <RowVatExcludedAmount AmountCurrencyIdentifier="EUR">%s</RowVatExcludedAmount>
-                    <RowAmount AmountCurrencyIdentifier="EUR">%s</RowAmount>""" % (i+1, discount_percent, discount_amount, discount_type_code, tax_percent, tax_code, tax_amount, tax_excluded_amount, price_total)
-                total_tax_items += '\n' + tax_items
-                total_items += '\n' + invoice_items + total_tax_items + """   
+                    <RowAmount AmountCurrencyIdentifier="EUR">%s</RowAmount>""" % (
+                    i + 1, discount_percent, discount_amount, discount_type_code, tax_percent, tax_code, tax_amount,
+                    tax_excluded_amount, price_total)
+                    total_tax_items += '\n' + tax_items
+                    total_items += '\n' + invoice_items + total_tax_items + """   
                 </InvoiceRow>"""
+
             else:
                 total_items += '\n' + invoice_items + """
                 </InvoiceRow>"""
