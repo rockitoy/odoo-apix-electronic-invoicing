@@ -122,14 +122,24 @@ class AccountEdiFormat(models.Model):
                     taxes_amount_rate.append(int(tax.amount))
 
             template_values['invoice_line_values'].append(line_template_values)
-            invoice_items = """
+            if line.product_id.default_code:
+                invoice_items = """
                 <InvoiceRow>
                     <ArticleIdentifier>%s</ArticleIdentifier>
                     <ArticleName>%s</ArticleName>
                     <InvoicedQuantity QuantityUnitCode="%s">%s</InvoicedQuantity>
-                    <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>""" % (line.product_id.default_code, line.product_id.name, line.product_uom_id.name,
-                                        str(line.quantity).replace('.', ','),
-                                        str(Decimal(line.price_unit).quantize(Decimal('1.00'))).replace('.', ','))
+                    <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>""" % (
+                line.product_id.default_code, line.product_id.name, line.product_uom_id.name,
+                str(line.quantity).replace('.', ','),
+                str(Decimal(line.price_unit).quantize(Decimal('1.00'))).replace('.', ','))
+            else:
+                invoice_items = """
+                <InvoiceRow>
+                    <ArticleName>%s</ArticleName>
+                    <InvoicedQuantity QuantityUnitCode="%s">%s</InvoicedQuantity>
+                    <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>""" % (line.product_id.name, line.product_uom_id.name,
+                    str(line.quantity).replace('.', ','),
+                    str(Decimal(line.price_unit).quantize(Decimal('1.00'))).replace('.', ','))
             if line.tax_ids:
                 total_tax_items = """"""
                 tax = self.env['account.tax'].browse(line.tax_ids[0].id)
