@@ -63,14 +63,30 @@
                 <DeliveryDetails>
                     <DeliveryDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></DeliveryDate>
                 </DeliveryDetails>
-                <InvoiceDetails>
+                <InvoiceDetails><t t-if="record.move_type == 'out_invoice'">
                     <InvoiceTypeCode>INV01</InvoiceTypeCode>
                     <InvoiceTypeText>LASKU</InvoiceTypeText>
                     <OriginCode>Original</OriginCode>
                     <InvoiceNumber><t t-esc="record.name"/></InvoiceNumber>
-                    <InvoiceDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></InvoiceDate>
+                    <InvoiceDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></InvoiceDate></t>
+                    <t t-elif="record.move_type == 'out_refund'">
+                    <InvoiceTypeCode>INV02</InvoiceTypeCode>
+                    <InvoiceTypeText>HYVITYSLASKU</InvoiceTypeText>
+                    <OriginCode>Original</OriginCode>
+                    <InvoiceNumber><t t-esc="record.name"/></InvoiceNumber>
+                    <InvoiceDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></InvoiceDate><t t-if="record.reversed_entry_id">
+                    <OriginalInvoiceNumber><t t-esc="record.reversed_entry_id.name"/></OriginalInvoiceNumber></t></t>
                     <SellerReferenceIdentifier><t t-esc="record.invoice_origin"/></SellerReferenceIdentifier>
-                    <OrderIdentifier><t t-esc="record.ref"/></OrderIdentifier>
+                    <OrderIdentifier><t t-esc="record.ref"/></OrderIdentifier><t t-if="record.move_type == 'out_refund'">
+                    <InvoiceTotalVatExcludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(record.amount_untaxed*-1)).replace('.',',' )"/></InvoiceTotalVatExcludedAmount>
+                    <InvoiceTotalVatAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(record.amount_tax*-1)).replace('.',',')"/></InvoiceTotalVatAmount>
+                    <InvoiceTotalVatIncludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(round(record.amount_total*-1,2))).replace('.',',')"/></InvoiceTotalVatIncludedAmount><t t-foreach="new_tax" t-as="new">
+                            <VatSpecificationDetails>
+                                <VatBaseAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(round(new_tax[new][0]*-1,2))).replace('.', ',')"/></VatBaseAmount>
+                                <VatRatePercent><t t-esc="str(new_tax[new][1]).replace('.', ',')"/></VatRatePercent>
+                                <VatCode><t t-esc="new_tax[new][2]"/></VatCode>
+                                <VatRateAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(round(new_tax[new][3]*-1,2))).replace('.', ',')"/></VatRateAmount>
+                            </VatSpecificationDetails></t></t><t t-else="">
                     <InvoiceTotalVatExcludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(record.amount_untaxed)).replace('.',',' )"/></InvoiceTotalVatExcludedAmount>
                     <InvoiceTotalVatAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(record.amount_tax)).replace('.',',')"/></InvoiceTotalVatAmount>
                     <InvoiceTotalVatIncludedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(round(record.amount_total,2))).replace('.',',')"/></InvoiceTotalVatIncludedAmount><t t-foreach="new_tax" t-as="new">
@@ -79,7 +95,7 @@
                                 <VatRatePercent><t t-esc="str(new_tax[new][1]).replace('.', ',')"/></VatRatePercent>
                                 <VatCode><t t-esc="new_tax[new][2]"/></VatCode>
                                 <VatRateAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(round(new_tax[new][3],2))).replace('.', ',')"/></VatRateAmount>
-                            </VatSpecificationDetails></t>
+                            </VatSpecificationDetails></t></t>
                     <PaymentTermsDetails>
                         <PaymentTermsFreeText><t t-esc="record.invoice_payment_term_id.name"/></PaymentTermsFreeText>
                         <InvoiceDueDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date_due)"/></InvoiceDueDate>
@@ -91,8 +107,9 @@
                 {var1}
                 <EpiDetails>
                     <EpiIdentificationDetails>
-                        <EpiDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></EpiDate>
-                        <EpiReference><t t-esc="record.payment_reference"/></EpiReference>
+                        <EpiDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date)"/></EpiDate><t t-if="record.move_type == 'out_refund'">
+                        <EpiReference><t t-esc="record.reversed_entry_id.payment_reference"/></EpiReference></t><t t-else="">
+                        <EpiReference><t t-esc="record.payment_reference"/></EpiReference></t>
                     </EpiIdentificationDetails>
                     <EpiPartyDetails>
                         <EpiBfiPartyDetails><t t-if="record.company_id.partner_id.bank_ids">
@@ -104,9 +121,11 @@
                                 <EpiAccountID IdentificationSchemeName="IBAN"><t t-esc="record.company_id.partner_id.bank_ids[0].acc_number.replace(' ','')"/></EpiAccountID></t>
                         </EpiBeneficiaryPartyDetails>
                     </EpiPartyDetails>
-                    <EpiPaymentInstructionDetails>
-                        <EpiRemittanceInfoIdentifier IdentificationSchemeName="SPY"><t t-esc="record.payment_reference"/></EpiRemittanceInfoIdentifier>
-                        <EpiInstructedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(round(record.amount_total,2))).replace('.', ',')"/></EpiInstructedAmount>
+                    <EpiPaymentInstructionDetails><t t-if="record.move_type == 'out_refund'">
+                        <EpiRemittanceInfoIdentifier IdentificationSchemeName="SPY"><t t-esc="record.reversed_entry_id.payment_reference"/></EpiRemittanceInfoIdentifier></t><t t-else="">
+                        <EpiRemittanceInfoIdentifier IdentificationSchemeName="SPY"><t t-esc="record.payment_reference"/></EpiRemittanceInfoIdentifier></t><t t-if="record.move_type == 'out_refund'">
+                        <EpiInstructedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(round(record.amount_total*-1,2))).replace('.', ',')"/></EpiInstructedAmount></t><t t-else="">
+                        <EpiInstructedAmount AmountCurrencyIdentifier="EUR"><t t-esc="str('{0:.2f}'.format(round(record.amount_total,2))).replace('.', ',')"/></EpiInstructedAmount></t>
                         <EpiCharge ChargeOption="SHA">SHA</EpiCharge>
                         <EpiDateOptionDate Format="CCYYMMDD"><t t-esc="format_date(record.invoice_date_due)"/></EpiDateOptionDate>
                     </EpiPaymentInstructionDetails>

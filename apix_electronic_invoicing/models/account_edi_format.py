@@ -123,23 +123,47 @@ class AccountEdiFormat(models.Model):
 
             template_values['invoice_line_values'].append(line_template_values)
             if line.product_id.default_code:
-                invoice_items = """
+                if line.move_id.move_type == 'out_refund':
+                    invoice_items = """
                 <InvoiceRow>
                     <ArticleIdentifier>%s</ArticleIdentifier>
                     <ArticleName>%s</ArticleName>
                     <InvoicedQuantity QuantityUnitCode="%s">%s</InvoicedQuantity>
                     <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>""" % (
-                line.product_id.default_code, line.product_id.name, line.product_uom_id.name,
-                str(line.quantity).replace('.', ','),
-                str(Decimal(line.price_unit).quantize(Decimal('1.00'))).replace('.', ','))
+                        line.product_id.default_code, line.product_id.name, line.product_uom_id.name,
+                        str(line.quantity).replace('.', ','),
+                        str(Decimal(line.price_unit*-1).quantize(Decimal('1.00'))).replace('.', ','))
+                else:
+                    invoice_items = """
+                <InvoiceRow>
+                    <ArticleIdentifier>%s</ArticleIdentifier>
+                    <ArticleName>%s</ArticleName>
+                    <InvoicedQuantity QuantityUnitCode="%s">%s</InvoicedQuantity>
+                    <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>""" % (
+                        line.product_id.default_code, line.product_id.name, line.product_uom_id.name,
+                        str(line.quantity).replace('.', ','),
+                        str(Decimal(line.price_unit).quantize(Decimal('1.00'))).replace('.', ','))
+
             else:
-                invoice_items = """
+                if line.move_id.move_type == 'out_refund':
+                    invoice_items = """
                 <InvoiceRow>
                     <ArticleName>%s</ArticleName>
                     <InvoicedQuantity QuantityUnitCode="%s">%s</InvoicedQuantity>
-                    <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>""" % (line.product_id.name, line.product_uom_id.name,
+                    <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>""" % (
+                    line.product_id.name, line.product_uom_id.name,
+                    str(line.quantity).replace('.', ','),
+                    str(Decimal(line.price_unit*-1).quantize(Decimal('1.00'))).replace('.', ','))
+                else:
+                    invoice_items = """
+                <InvoiceRow>
+                    <ArticleName>%s</ArticleName>
+                    <InvoicedQuantity QuantityUnitCode="%s">%s</InvoicedQuantity>
+                    <UnitPriceAmount AmountCurrencyIdentifier="EUR" UnitPriceUnitCode="EUR">%s</UnitPriceAmount>""" % (
+                    line.product_id.name, line.product_uom_id.name,
                     str(line.quantity).replace('.', ','),
                     str(Decimal(line.price_unit).quantize(Decimal('1.00'))).replace('.', ','))
+
             if line.tax_ids:
                 total_tax_items = """"""
                 tax = self.env['account.tax'].browse(line.tax_ids[0].id)
@@ -154,50 +178,78 @@ class AccountEdiFormat(models.Model):
                     vat_specific_dict[tax.id] = [line.price_subtotal, tax.amount, tax.tax_code, vatrate_amt]
 
                 if tax.tax_code == 'Z' or tax.tax_code == 'E':
-
-                    tax_percent_c = tax.amount
-                    tax_percent = str(tax_percent_c).replace('.', ',')
-                    tax_amount_c = 0.00
-                    tax_amount = str(tax_amount_c).replace('.', ',')
-                    tax_excluded = Decimal(line.price_subtotal).quantize(Decimal('1.00'))
-                    tax_excluded_amount = str(tax_excluded).replace('.', ',')
-                    price_total_c = Decimal(line.price_subtotal + tax_amount_c).quantize(Decimal('1.00'))
-                    price_total = str(price_total_c).replace('.', ',')
-                    tax_code = tax.tax_code
-
-                    discount_percent_c = line.discount
-                    discount_percent = str(discount_percent_c).replace('.', ',')
-
-                    product_amount = line.quantity * line.price_unit
-                    discount_amount_c = (discount_percent_c / 100) * product_amount
-                    discount = Decimal(discount_amount_c).quantize(Decimal('1.00'))
-                    discount_amount = str(discount).replace('.', ',')
-
-                    discount_type_code = 95
-
+                    if line.move_id.move_type == 'out_refund':
+                        tax_percent_c = tax.amount
+                        tax_percent = str(tax_percent_c).replace('.', ',')
+                        tax_amount_c = 0.00
+                        tax_amount = str(tax_amount_c  -1).replace('.', ',')
+                        tax_excluded = Decimal(line.price_subtotal * -1).quantize(Decimal('1.00'))
+                        tax_excluded_amount = str(tax_excluded).replace('.', ',')
+                        price_total_c = Decimal(line.price_subtotal + tax_amount_c).quantize(Decimal('1.00'))
+                        price_total = str(price_total_c * -1).replace('.', ',')
+                        tax_code = tax.tax_code
+                        discount_percent_c = line.discount
+                        discount_percent = str(discount_percent_c).replace('.', ',')
+                        product_amount = line.quantity * line.price_unit
+                        discount_amount_c = (discount_percent_c / 100) * product_amount
+                        discount = Decimal(discount_amount_c * -1).quantize(Decimal('1.00'))
+                        discount_amount = str(discount).replace('.', ',')
+                        discount_type_code = 95
+                    else:
+                        tax_percent_c = tax.amount
+                        tax_percent = str(tax_percent_c).replace('.', ',')
+                        tax_amount_c = 0.00
+                        tax_amount = str(tax_amount_c).replace('.', ',')
+                        tax_excluded = Decimal(line.price_subtotal).quantize(Decimal('1.00'))
+                        tax_excluded_amount = str(tax_excluded).replace('.', ',')
+                        price_total_c = Decimal(line.price_subtotal + tax_amount_c).quantize(Decimal('1.00'))
+                        price_total = str(price_total_c).replace('.', ',')
+                        tax_code = tax.tax_code
+                        discount_percent_c = line.discount
+                        discount_percent = str(discount_percent_c).replace('.', ',')
+                        product_amount = line.quantity * line.price_unit
+                        discount_amount_c = (discount_percent_c / 100) * product_amount
+                        discount = Decimal(discount_amount_c).quantize(Decimal('1.00'))
+                        discount_amount = str(discount).replace('.', ',')
+                        discount_type_code = 95
                 else:
-                    tax_percent_c = tax.amount
-                    tax_percent = str(tax_percent_c).replace('.', ',')
-                    tax_amount_c = (line.price_subtotal * tax_percent_c) / 100
-                    tax_amount_q = Decimal(tax_amount_c).quantize(Decimal('1.00'))
-                    tax_amount = str(tax_amount_q).replace('.', ',')
-                    tax_excluded = Decimal(line.price_subtotal).quantize(Decimal('1.00'))
-                    tax_excluded_amount = str(tax_excluded).replace('.', ',')
-                    price_total_c = Decimal(line.price_subtotal + tax_amount_c).quantize(Decimal('1.00'))
-                    price_total = str(price_total_c).replace('.', ',')
-                    tax_code = tax.tax_code
-
-                    discount_percent_c = line.discount
-                    discount_percent = str(discount_percent_c).replace('.', ',')
-
-                    product_amount = line.quantity * line.price_unit
-                    discount_amount_c = (discount_percent_c/100)*product_amount
-                    discount = Decimal(discount_amount_c).quantize(Decimal('1.00'))
-                    discount_amount = str(discount).replace('.', ',')
-
-                    discount_type_code = 95
+                    if line.move_id.move_type == 'out_refund':
+                        tax_percent_c = tax.amount
+                        tax_percent = str(tax_percent_c).replace('.', ',')
+                        tax_amount_c = (line.price_subtotal * tax_percent_c) / 100
+                        tax_amount_q = Decimal(tax_amount_c).quantize(Decimal('1.00'))
+                        tax_amount = str(tax_amount_q * -1).replace('.', ',')
+                        tax_excluded = Decimal(line.price_subtotal* -1).quantize(Decimal('1.00'))
+                        tax_excluded_amount = str(tax_excluded).replace('.', ',')
+                        price_total_c = Decimal(line.price_subtotal + tax_amount_c).quantize(Decimal('1.00'))
+                        price_total = str(price_total_c* -1).replace('.', ',')
+                        tax_code = tax.tax_code
+                        discount_percent_c = line.discount
+                        discount_percent = str(discount_percent_c).replace('.', ',')
+                        product_amount = line.quantity * line.price_unit
+                        discount_amount_c = (discount_percent_c / 100) * product_amount
+                        discount = Decimal(discount_amount_c* -1).quantize(Decimal('1.00'))
+                        discount_amount = str(discount).replace('.', ',')
+                        discount_type_code = 95
+                    else:
+                        tax_percent_c = tax.amount
+                        tax_percent = str(tax_percent_c).replace('.', ',')
+                        tax_amount_c = (line.price_subtotal * tax_percent_c) / 100
+                        tax_amount_q = Decimal(tax_amount_c).quantize(Decimal('1.00'))
+                        tax_amount = str(tax_amount_q).replace('.', ',')
+                        tax_excluded = Decimal(line.price_subtotal).quantize(Decimal('1.00'))
+                        tax_excluded_amount = str(tax_excluded).replace('.', ',')
+                        price_total_c = Decimal(line.price_subtotal + tax_amount_c).quantize(Decimal('1.00'))
+                        price_total = str(price_total_c).replace('.', ',')
+                        tax_code = tax.tax_code
+                        discount_percent_c = line.discount
+                        discount_percent = str(discount_percent_c).replace('.', ',')
+                        product_amount = line.quantity * line.price_unit
+                        discount_amount_c = (discount_percent_c / 100) * product_amount
+                        discount = Decimal(discount_amount_c).quantize(Decimal('1.00'))
+                        discount_amount = str(discount).replace('.', ',')
+                        discount_type_code = 95
                 if discount_percent_c == 0:
-                    print("ZERO",discount_percent_c)
                     tax_items = """
                     <RowPositionIdentifier>%s</RowPositionIdentifier>
                     <RowVatRatePercent>%s</RowVatRatePercent>
@@ -205,13 +257,13 @@ class AccountEdiFormat(models.Model):
                     <RowVatAmount AmountCurrencyIdentifier="EUR">%s</RowVatAmount>
                     <RowVatExcludedAmount AmountCurrencyIdentifier="EUR">%s</RowVatExcludedAmount>
                     <RowAmount AmountCurrencyIdentifier="EUR">%s</RowAmount>""" % (
-                    i + 1, tax_percent, tax_code, tax_amount,
-                    tax_excluded_amount, price_total)
+                            i + 1, tax_percent, tax_code, tax_amount,
+                            tax_excluded_amount, price_total)
                     total_tax_items += '\n' + tax_items
                     total_items += '\n' + invoice_items + total_tax_items + """   
                 </InvoiceRow>"""
+
                 else:
-                    print("NOT ZERO",discount_percent_c)
                     tax_items = """
                     <RowPositionIdentifier>%s</RowPositionIdentifier>
                     <RowDiscountPercent>%s</RowDiscountPercent>
@@ -222,12 +274,10 @@ class AccountEdiFormat(models.Model):
                     <RowVatAmount AmountCurrencyIdentifier="EUR">%s</RowVatAmount>
                     <RowVatExcludedAmount AmountCurrencyIdentifier="EUR">%s</RowVatExcludedAmount>
                     <RowAmount AmountCurrencyIdentifier="EUR">%s</RowAmount>""" % (
-                    i + 1, discount_percent, discount_amount, discount_type_code, tax_percent, tax_code, tax_amount,
-                    tax_excluded_amount, price_total)
+                            i + 1, discount_percent, discount_amount, discount_type_code, tax_percent, tax_code,tax_amount,tax_excluded_amount, price_total)
                     total_tax_items += '\n' + tax_items
                     total_items += '\n' + invoice_items + total_tax_items + """   
                 </InvoiceRow>"""
-
             else:
                 total_items += '\n' + invoice_items + """
                 </InvoiceRow>"""
